@@ -1,0 +1,27 @@
+version: 2
+
+builds:
+  - id: greyprint
+    main: ./cmd/greyprint
+    binary: greyprint
+    ldflags:
+      - -s -w -X github.com/greylabss/greyprint/internal/cli.version={{ .Version }}
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - formats:
+      - tar.gz
+    name_template: "greyprint_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+
+checksum:
+  name_template: checksums.txt

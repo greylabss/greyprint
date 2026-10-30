@@ -1,0 +1,8 @@
+-- +goose Up
+CREATE TABLE items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- +goose Down
+DROP TABLE items;
