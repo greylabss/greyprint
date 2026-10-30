@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"github.com/joho/godotenv"
 	"github.com/pressly/goose/v3"
@@ -17,7 +18,7 @@ func main() {
 		os.Exit(1)
 	}
 	defer db.Close()
-	if err := goose.Up(db, "migrations"); err != nil {
+	if err := goose.UpContext(context.Background(), db, "migrations"); err != nil {
 		slog.Error("run migrations", "error", err)
 		os.Exit(1)
 	}

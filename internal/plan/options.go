@@ -2,7 +2,6 @@ package plan
 
 import (
 	"fmt"
-	"regexp"
 )
 
 type Options struct {
@@ -16,10 +15,8 @@ type Options struct {
 	Greyship bool   `json:"greyship"`
 }
 
-var namePattern = regexp.MustCompile(`^[a-z][a-z0-9_-]{0,63}$`)
-
 func (o Options) Validate() error {
-	if !namePattern.MatchString(o.Name) {
+	if !validName(o.Name) {
 		return fmt.Errorf("invalid project name %q: use lowercase letters, digits, - or _, starting with a letter and at most 64 characters", o.Name)
 	}
 	if o.Module == "" {
@@ -38,4 +35,17 @@ func (o Options) Validate() error {
 		return fmt.Errorf("--access %q requires a database; set --db to postgres, mysql, or sqlite", o.Access)
 	}
 	return nil
+}
+
+func validName(name string) bool {
+	if len(name) == 0 || len(name) > 64 || name[0] < 'a' || name[0] > 'z' {
+		return false
+	}
+	for i := 1; i < len(name); i++ {
+		c := name[i]
+		if (c < 'a' || c > 'z') && (c < '0' || c > '9') && c != '-' && c != '_' {
+			return false
+		}
+	}
+	return true
 }

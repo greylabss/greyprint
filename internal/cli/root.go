@@ -26,6 +26,7 @@ type result struct {
 	Steps   []install.Step `json:"steps"`
 }
 
+// version is set by GoReleaser so released binaries report their tag.
 var version = "dev"
 
 func New() *cobra.Command {
@@ -80,7 +81,7 @@ func newCommand() *cobra.Command {
 		if o.Name == "" {
 			return errors.New("project name is required when prompts are disabled")
 		}
-		if o.Module == "" {
+		if o.Module == "" && o.Name != "" {
 			o.Module = defaultModule(o.Name)
 		}
 		if dir == "" {

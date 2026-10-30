@@ -6,6 +6,7 @@ import (
 	"example.com/sample/internal/config"
 	"example.com/sample/internal/database"
 	"example.com/sample/internal/routes"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -24,17 +25,21 @@ func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	cfg := config.Load()
-	dbPing, dbClose, err := database.Connect(ctx, cfg.DatabaseURL)
+	db, err := database.Connect(ctx, cfg.DatabaseURL)
 	if err != nil {
 		return err
 	}
-	defer dbClose()
-	cachePing, cacheClose, err := cache.Connect(ctx, cfg.RedisURL)
+	sqlDB, err := db.DB()
+	if err != nil {
+		return fmt.Errorf("get database connection: %w", err)
+	}
+	defer sqlDB.Close()
+	redisClient, err := cache.Connect(ctx, cfg.RedisURL)
 	if err != nil {
 		return err
 	}
-	defer cacheClose()
-	app := routes.New(dbPing, cachePing)
+	defer redisClient.Close()
+	app := routes.New(db, redisClient)
 	go func() {
 		<-ctx.Done()
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

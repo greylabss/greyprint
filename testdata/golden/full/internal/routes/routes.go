@@ -1,22 +1,17 @@
 package routes
 
 import (
-	"context"
 	"github.com/gofiber/fiber/v2"
+	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
+	"net/http"
 )
 
-func New(dbPing, cachePing func(context.Context) error) *fiber.App {
+func New(db *gorm.DB, redisClient *redis.Client) *fiber.App {
 	app := fiber.New()
 	app.Get("/health", func(c *fiber.Ctx) error {
-		if dbPing != nil {
-			if err := dbPing(c.UserContext()); err != nil {
-				return c.Status(503).JSON(fiber.Map{"status": "error"})
-			}
-		}
-		if cachePing != nil {
-			if err := cachePing(c.UserContext()); err != nil {
-				return c.Status(503).JSON(fiber.Map{"status": "error"})
-			}
+		if err := check(c.UserContext(), db, redisClient); err != nil {
+			return c.Status(http.StatusServiceUnavailable).JSON(fiber.Map{"status": "error"})
 		}
 		return c.JSON(fiber.Map{"status": "ok"})
 	})

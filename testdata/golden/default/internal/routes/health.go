@@ -6,9 +6,13 @@ import (
 	"net/http"
 )
 
-func health(dbPing, cachePing func(context.Context) error) http.HandlerFunc {
+func check(ctx context.Context) error {
+	return nil
+}
+
+func health() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if (dbPing != nil && dbPing(r.Context()) != nil) || (cachePing != nil && cachePing(r.Context()) != nil) {
+		if err := check(r.Context()); err != nil {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			_ = json.NewEncoder(w).Encode(map[string]string{"status": "error"})
 			return
